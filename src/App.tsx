@@ -256,18 +256,21 @@ function createProjectCells({
         label: option.name,
       })),
       isOpen,
+      groupId: "project-name",
     },
     {
       type: "text",
       text: selectedOption?.function ?? "",
       nonEditable: true,
       style: NON_EDITABLE_STYLE,
+      groupId: "project-function",
     },
     {
       type: "number",
       value: project.percentage / 100,
       format: PERCENTAGE_FORMAT,
       nanToZero: true,
+      groupId: "project-percentage",
     },
   ];
 }
@@ -281,12 +284,14 @@ function createEmptyCells(): [DropdownCell, TextCell, NumberCell] {
       isOpen: false,
       isDisabled: true,
       style: DISABLED_STYLE,
+      groupId: "project-name",
     },
     {
       type: "text",
       text: "-",
       nonEditable: true,
       style: DISABLED_STYLE,
+      groupId: "project-function",
     },
     {
       type: "number",
@@ -294,6 +299,7 @@ function createEmptyCells(): [DropdownCell, TextCell, NumberCell] {
       format: PERCENTAGE_FORMAT,
       nonEditable: true,
       style: DISABLED_STYLE,
+      groupId: "project-percentage",
     },
   ];
 }
@@ -496,6 +502,7 @@ function App() {
         }
 
         case "number": {
+          console.log("change", change);
           const newValue = change.newCell.value;
           if (typeof newValue === "number" && !isNaN(newValue)) {
             const percentageValue = Math.round(newValue * 100);
