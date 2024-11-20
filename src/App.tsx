@@ -456,7 +456,7 @@ function App() {
       const [_, field, indexStr] = projectColIdParts;
       const projectIndex = parseInt(indexStr) - 1;
 
-      if (projectIndex < 0 || projectIndex >= data.projects.length) {
+      if (projectIndex < 0) {
         console.warn("Invalid project index: ", projectIndex);
         return prevManHours;
       }
