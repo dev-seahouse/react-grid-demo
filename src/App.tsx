@@ -142,7 +142,7 @@ function getHeaderRow(maxNumProjects: number) {
 
   for (let i = 0; i < maxNumProjects; i++) {
     const projectGroupStyle = {
-      backgroundColor: `hsl(${(i * 120) % 360}, 70%, 90%)`,
+      background: `hsl(${(i * 120) % 360}, 70%, 90%)`,
     };
 
     headerCells.push(
@@ -167,7 +167,12 @@ function getHeaderRow(maxNumProjects: number) {
   headerCells.push(
     { type: "header", text: "填写人" },
     { type: "header", text: "填写状态" },
-    { type: "header", text: "更新时间" }
+    { type: "header", text: "更新时间" },
+    {
+      type: "header",
+      text: "百分比合计",
+      style: { background: "#f5f5f5" } as CellStyle,
+    }
   );
 
   return {
@@ -190,7 +195,6 @@ interface DropdownState {
   };
 }
 
-// Add the departments constant for reference
 export const departments = [
   "效率工程——产品&测试——产品经理",
   "效率工程——服务端",
@@ -200,7 +204,6 @@ export const departments = [
   "效率工程——架构",
 ];
 
-// Add this constant at the top level with other constants
 const DISABLED_STYLE = {
   backgroundColor: "#f5f5f5",
   color: "#999",
@@ -212,7 +215,6 @@ const NON_EDITABLE_STYLE = {
   color: "#666",
 } as const;
 
-// Helper function to create project cells with fixed options
 interface CreateProjectCellsParams {
   project: Project;
   isOpen: boolean;
@@ -251,7 +253,6 @@ function createProjectCells({
   ];
 }
 
-// Helper function to create disabled cells
 function createEmptyCells(): [DropdownCell, TextCell, NumberCell] {
   return [
     {
@@ -316,6 +317,7 @@ function App() {
       { columnId: "assignee", width: 120 },
       { columnId: "status", width: 120 },
       { columnId: "updatedAt", width: 120 },
+      { columnId: "total-percentage", width: 100 },
     ] satisfies Column[];
 
     return [...baseColumns, ...projectColumns, ...endColumns];
@@ -358,10 +360,27 @@ function App() {
             return createEmptyCells();
           });
 
+        const totalPercentage = manHour.projects.reduce(
+          (sum, project) => sum + project.percentage,
+          0
+        );
+
+        const totalPercentageCell: NumberCell = {
+          type: "number",
+          value: totalPercentage / 100,
+          format: PERCENTAGE_FORMAT,
+          nonEditable: true,
+          style: {
+            background: totalPercentage === 100 ? "#f0fff0" : "#fff0f0",
+            color: totalPercentage === 100 ? "#006400" : "#ff0000",
+          } as CellStyle,
+        };
+
         const endCells: DefaultCellTypes[] = [
           { type: "text", text: manHour.assignee },
           { type: "text", text: manHour.status },
           { type: "text", text: manHour.updatedAt },
+          totalPercentageCell,
         ];
 
         return {
@@ -444,20 +463,16 @@ function App() {
         case "number": {
           const newValue = change.newCell.value;
           if (typeof newValue === "number" && !isNaN(newValue)) {
-            // Convert from decimal to percentage (multiply by 100)
             const percentageValue = Math.round(newValue * 100);
 
-            // Validate percentage is between 0 and 100
             if (percentageValue >= 0 && percentageValue <= 100) {
               data.projects[projectIndex].percentage = percentageValue;
 
-              // Calculate total percentage for this row
               const totalPercentage = data.projects.reduce(
                 (sum, project) => sum + project.percentage,
                 0
               );
 
-              // Warn if total percentage exceeds 100%
               if (totalPercentage > 100) {
                 console.warn(
                   `Total percentage exceeds 100% for employee ${data.employee}`
@@ -504,6 +519,7 @@ function App() {
         columns={columns}
         stickyTopRows={1}
         stickyLeftColumns={3}
+        stickyRightColumns={1}
         onCellsChanged={handleChanges}
         enableFillHandle
         enableRowSelection
