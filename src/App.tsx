@@ -23,7 +23,6 @@ interface ProjectOption {
 
 interface Project {
   projectId: string | null;
-  options: ProjectOption[];
   percentage: number;
 }
 
@@ -45,6 +44,46 @@ export const roleFunctionOptions: OptionType[] = [
   { value: "management", label: "管理" },
 ];
 
+interface ProjectOptionsMap {
+  [manHourId: string]: ProjectOption[];
+}
+
+interface ProjectOptionsResponse {
+  data: ProjectOptionsMap;
+}
+
+const getProjectOptions = async (
+  manHourIds: string[]
+): Promise<ProjectOptionsResponse> => {
+  const optionsMap: ProjectOptionsMap = {
+    "1": [
+      { id: "general", name: "综合项目", function: "研发" },
+      { id: "userGrowth", name: "用户增长", function: "运维" },
+      { id: "manHourManagement", name: "工时管理", function: "研发" },
+    ],
+    "2": [
+      { id: "userGrowth", name: "用户增长", function: "运维" },
+      { id: "general", name: "综合项目", function: "研发" },
+    ],
+    "3": [
+      { id: "userGrowth", name: "用户增长", function: "运维" },
+      { id: "dataAnalysis", name: "数据分析", function: "研发" },
+      { id: "infrastructure", name: "基础设施", function: "运维" },
+    ],
+  };
+
+  await new Promise((resolve) => setTimeout(resolve, 100));
+
+  const result: ProjectOptionsMap = {};
+  manHourIds.forEach((id) => {
+    if (optionsMap[id]) {
+      result[id] = optionsMap[id];
+    }
+  });
+
+  return { data: result };
+};
+
 const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
   return {
     data: [
@@ -56,65 +95,14 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
         projects: [
           {
             projectId: "general",
-            options: [
-              {
-                id: "general",
-                name: "综合项目",
-                function: "研发",
-              },
-              {
-                id: "userGrowth",
-                name: "用户增长",
-                function: "运维",
-              },
-              {
-                id: "manHourManagement",
-                name: "工时管理",
-                function: "研发",
-              },
-            ],
             percentage: 30,
           },
           {
             projectId: "userGrowth",
-            options: [
-              {
-                id: "general",
-                name: "综合项目",
-                function: "研发",
-              },
-              {
-                id: "userGrowth",
-                name: "用户增长",
-                function: "运维",
-              },
-              {
-                id: "manHourManagement",
-                name: "工时管理",
-                function: "研发",
-              },
-            ],
             percentage: 40,
           },
           {
             projectId: "manHourManagement",
-            options: [
-              {
-                id: "general",
-                name: "综合项目",
-                function: "研发",
-              },
-              {
-                id: "userGrowth",
-                name: "用户增长",
-                function: "运维",
-              },
-              {
-                id: "manHourManagement",
-                name: "工时管理",
-                function: "研发",
-              },
-            ],
             percentage: 30,
           },
         ],
@@ -130,34 +118,10 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
         projects: [
           {
             projectId: "general",
-            options: [
-              {
-                id: "userGrowth",
-                name: "用户增长",
-                function: "运维",
-              },
-              {
-                id: "general",
-                name: "综合项目",
-                function: "研发",
-              },
-            ],
             percentage: 30,
           },
           {
             projectId: "userGrowth",
-            options: [
-              {
-                id: "userGrowth",
-                name: "用户增长",
-                function: "运维",
-              },
-              {
-                id: "general",
-                name: "综合项目",
-                function: "研发",
-              },
-            ],
             percentage: 40,
           },
         ],
@@ -173,13 +137,6 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
         projects: [
           {
             projectId: "userGrowth",
-            options: [
-              {
-                id: "userGrowth",
-                name: "用户增长",
-                function: "运维",
-              },
-            ],
             percentage: 40,
           },
         ],
@@ -246,7 +203,6 @@ const PERCENTAGE_FORMAT = new Intl.NumberFormat("zh-CN", {
   maximumFractionDigits: 0,
 });
 
-// Update the DropdownState interface to match the example
 interface DropdownState {
   [rowId: string]: {
     [projectIndex: string]: boolean;
@@ -275,22 +231,27 @@ const NON_EDITABLE_STYLE = {
 
 interface CreateProjectCellsParams {
   project: Project;
+  manHourId: string;
   isOpen: boolean;
+  projectOptionsMap: ProjectOptionsMap;
 }
 
 function createProjectCells({
   project,
+  manHourId,
   isOpen,
+  projectOptionsMap,
 }: CreateProjectCellsParams): [DropdownCell, TextCell, NumberCell] {
-  const selectedOption = project.options.find(
-    (p) => p.id === project.projectId
+  const options = projectOptionsMap[manHourId] || [];
+  const selectedOption = options.find(
+    (option: ProjectOption) => option.id === project.projectId
   );
 
   return [
     {
       type: "dropdown",
       selectedValue: project.projectId ?? "",
-      values: project.options.map((option) => ({
+      values: options.map((option: ProjectOption) => ({
         value: option.id,
         label: option.name,
       })),
@@ -339,6 +300,7 @@ function createEmptyCells(): [DropdownCell, TextCell, NumberCell] {
 
 function App() {
   const [manHours, setManHours] = useState<ManHourRow[]>([]);
+  const [projectOptions, setProjectOptions] = useState<ProjectOptionsMap>({});
   const [dropdownStates, setDropdownStates] = useState<DropdownState>({});
 
   const maxNumProjects = manHours.reduce(
@@ -347,9 +309,20 @@ function App() {
   );
 
   useEffect(() => {
-    getManHours().then((res) => {
-      setManHours(res.data);
-    });
+    const fetchData = async () => {
+      const manHoursResponse = await getManHours();
+      const manHourIds = manHoursResponse.data.map((mh) => mh.id);
+
+      const [manHoursData, projectOptionsData] = await Promise.all([
+        manHoursResponse,
+        getProjectOptions(manHourIds),
+      ]);
+
+      setProjectOptions(projectOptionsData.data);
+      setManHours(manHoursData.data);
+    };
+
+    fetchData();
   }, []);
 
   function getDropdownState(rowId: string, projectIndex: number): boolean {
@@ -412,7 +385,9 @@ function App() {
             if (index < manHour.projects.length) {
               return createProjectCells({
                 project: manHour.projects[index],
+                manHourId: manHour.id,
                 isOpen: getDropdownState(manHour.id, index),
+                projectOptionsMap: projectOptions,
               });
             }
             return createEmptyCells();
@@ -488,8 +463,10 @@ function App() {
             );
           }
 
-          const selectedProject = data.projects[projectIndex].options.find(
-            (p) => p.id === data.projects[projectIndex].projectId
+          const options = projectOptions[data.id] || [];
+          const selectedProject = options.find(
+            (option: ProjectOption) =>
+              option.id === data.projects[projectIndex].projectId
           );
 
           if (selectedProject && isStringKey(field, selectedProject)) {
