@@ -79,6 +79,11 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
             projectId: "userGrowth",
             options: [
               {
+                id: "general",
+                name: "综合项目",
+                function: "研发",
+              },
+              {
                 id: "userGrowth",
                 name: "用户增长",
                 function: "运维",
@@ -94,6 +99,16 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
           {
             projectId: "manHourManagement",
             options: [
+              {
+                id: "general",
+                name: "综合项目",
+                function: "研发",
+              },
+              {
+                id: "userGrowth",
+                name: "用户增长",
+                function: "运维",
+              },
               {
                 id: "manHourManagement",
                 name: "工时管理",
@@ -115,12 +130,34 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
         projects: [
           {
             projectId: "general",
-            options: allProjectOptions,
+            options: [
+              {
+                id: "userGrowth",
+                name: "用户增长",
+                function: "运维",
+              },
+              {
+                id: "general",
+                name: "综合项目",
+                function: "研发",
+              },
+            ],
             percentage: 30,
           },
           {
             projectId: "userGrowth",
-            options: allProjectOptions,
+            options: [
+              {
+                id: "userGrowth",
+                name: "用户增长",
+                function: "运维",
+              },
+              {
+                id: "general",
+                name: "综合项目",
+                function: "研发",
+              },
+            ],
             percentage: 40,
           },
         ],
@@ -136,7 +173,13 @@ const getManHours = async (): Promise<{ data: ManHourRow[] }> => {
         projects: [
           {
             projectId: "userGrowth",
-            options: allProjectOptions,
+            options: [
+              {
+                id: "userGrowth",
+                name: "用户增长",
+                function: "运维",
+              },
+            ],
             percentage: 40,
           },
         ],
