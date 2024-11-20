@@ -403,37 +403,75 @@ function App() {
         return prevManHours;
       }
 
-      if (change.type === "text") {
-        if (projectColIdParts.length !== 3) {
-          throw new Error(
-            `Invalid project columnId, expected format: project-function-1, got ${columnId}`
-          );
-        }
-
-        const selectedProject = data.projects[projectIndex].options.find(
-          (p) => p.id === data.projects[projectIndex].projectId
-        );
-
-        if (selectedProject && isStringKey(field, selectedProject)) {
-          selectedProject[field] = change.newCell.text;
-        }
-      }
-
-      if (change.type === "dropdown") {
-        setDropdownStates((prev) => {
-          const newState = { ...prev };
-          if (!newState[data.id]) {
-            newState[data.id] = {};
+      switch (change.type) {
+        case "text": {
+          if (projectColIdParts.length !== 3) {
+            throw new Error(
+              `Invalid project columnId, expected format: project-function-1, got ${columnId}`
+            );
           }
-          newState[data.id][projectIndex] = Boolean(change.newCell.isOpen);
-          return newState;
-        });
 
-        if (
-          change.newCell.selectedValue &&
-          change.newCell.selectedValue !== change.previousCell.selectedValue
-        ) {
-          data.projects[projectIndex].projectId = change.newCell.selectedValue;
+          const selectedProject = data.projects[projectIndex].options.find(
+            (p) => p.id === data.projects[projectIndex].projectId
+          );
+
+          if (selectedProject && isStringKey(field, selectedProject)) {
+            selectedProject[field] = change.newCell.text;
+          }
+          break;
+        }
+
+        case "dropdown": {
+          setDropdownStates((prev) => {
+            const newState = { ...prev };
+            if (!newState[data.id]) {
+              newState[data.id] = {};
+            }
+            newState[data.id][projectIndex] = Boolean(change.newCell.isOpen);
+            return newState;
+          });
+
+          if (
+            change.newCell.selectedValue &&
+            change.newCell.selectedValue !== change.previousCell.selectedValue
+          ) {
+            data.projects[projectIndex].projectId =
+              change.newCell.selectedValue;
+          }
+          break;
+        }
+
+        case "number": {
+          const newValue = change.newCell.value;
+          if (typeof newValue === "number" && !isNaN(newValue)) {
+            // Convert from decimal to percentage (multiply by 100)
+            const percentageValue = Math.round(newValue * 100);
+
+            // Validate percentage is between 0 and 100
+            if (percentageValue >= 0 && percentageValue <= 100) {
+              data.projects[projectIndex].percentage = percentageValue;
+
+              // Calculate total percentage for this row
+              const totalPercentage = data.projects.reduce(
+                (sum, project) => sum + project.percentage,
+                0
+              );
+
+              // Warn if total percentage exceeds 100%
+              if (totalPercentage > 100) {
+                console.warn(
+                  `Total percentage exceeds 100% for employee ${data.employee}`
+                );
+              }
+            } else {
+              console.warn(
+                `Invalid percentage value: ${percentageValue}%. Must be between 0 and 100`
+              );
+              // Revert to previous value
+              return prevManHours;
+            }
+          }
+          break;
         }
       }
     }
