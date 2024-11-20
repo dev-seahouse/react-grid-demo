@@ -558,6 +558,7 @@ function App() {
         onCellsChanged={handleChanges}
         enableFillHandle
         enableRowSelection
+        enableRangeSelection
         enableColumnSelection
       />
     </div>
