@@ -7,4 +7,108 @@
 
 .reactgrid-content {
   height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Base cell styles with increased specificity */
+.reactgrid-content .rg-pane .rg-cell {
+  color: rgba(0, 0, 0, 0.88);
+  background: white;
+  border-right: 1px solid #e5eaf0;
+  border-bottom: 1px solid #e5eaf0;
+  padding: 0 12px;
+  font-size: 14px !important;
+  font-family: inherit;
+}
+
+/* Header cells with maximum specificity */
+.reactgrid-content .rg-pane.rg-pane-top .rg-cell {
+  font-size: 13px !important;
+  background: rgba(247, 248, 250, 1) !important;
+  font-weight: 500;
+  padding: 0 12px;
+  font-family: inherit;
+}
+
+.rg-row {
+  height: 32px !important;
+}
+
+/* Custom grid styles */
+.custom-grid {
+  border: 1px solid #e5eaf0;
+}
+
+/* Selection styles */
+.reactgrid-content .rg-cell.rg-cell-selected {
+  background-color: #e6f4ff !important;
+}
+
+.reactgrid-content .rg-cell.rg-cell-focus {
+  outline: 1px solid #1677ff;
+  outline-offset: -1px;
+}
+
+/* Project group colors */
+.reactgrid-content .rg-cell.project-group-1 {
+  background-color: #fff1f0 !important;
+}
+
+.reactgrid-content .rg-cell.project-group-2 {
+  background-color: #f6ffed !important;
+}
+
+.reactgrid-content .rg-cell.project-group-3 {
+  background-color: #f0f5ff !important;
+}
+
+/* Dropdown styles */
+.rg-dropdown-menu {
+  background: white;
+  border-radius: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+}
+
+.rg-dropdown-option {
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.rg-dropdown-option:hover,
+.rg-dropdown-option.focused {
+  background-color: #f5f5f5 !important;
+}
+
+.rg-dropdown-option.selected {
+  background-color: #e6f4ff;
+  color: #1677ff;
+}
+
+.rg-dropdown-option.disabled {
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
+}
+
+/* Remove box shadow from header cells specifically */
+.reactgrid-content .rg-pane.rg-pane-top {
+  box-shadow: none !important;
+}
+
+/* Add box shadow only to the bottom of the header row */
+.reactgrid-content .rg-row:first-child {
+  box-shadow: inset 0 -1px 0 #e5eaf0;
+}
+
+/* Update Select component padding in dropdown cells */
+.reactgrid-content .rg-pane .rg-cell .select__value-container {
+  padding: 0 12px;
+}
+
+.reactgrid-content .rg-pane .rg-cell .select__single-value {
+  margin-left: 0;
 }

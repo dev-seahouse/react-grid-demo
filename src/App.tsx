@@ -222,14 +222,13 @@ export const departments = [
 ];
 
 const DISABLED_STYLE = {
-  backgroundColor: "#f5f5f5",
-  color: "#999",
-  borderColor: "#e0e0e0",
+  backgroundColor: "#fafafa",
+  color: "rgba(0, 0, 0, 0.25)",
 } as const;
 
 const NON_EDITABLE_STYLE = {
   backgroundColor: "#fafafa",
-  color: "#666",
+  color: "rgba(0, 0, 0, 0.65)",
 } as const;
 
 interface CreateProjectCellsParams {

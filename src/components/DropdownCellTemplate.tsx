@@ -116,47 +116,72 @@ const DropdownInput: React.FC<DIProps> = ({ onCellChanged, cell }) => {
             ...provided,
             width: "100%",
             height: "100%",
-            ...cell.styles?.container,
           }),
           control: (provided) => ({
             ...provided,
+            minHeight: "32px",
+            height: "32px",
+            backgroundColor: "transparent",
             border: "none",
-            borderColor: "transparent",
-            minHeight: "25px",
-            background: "transparent",
+            borderRadius: "0",
             boxShadow: "none",
-            ...cell.styles?.control,
+            cursor: "pointer",
+            "&:hover": {
+              border: "none",
+            },
+          }),
+          placeholder: (provided) => ({
+            ...provided,
+            color: "rgba(0, 0, 0, 0.25)",
           }),
           indicatorsContainer: (provided) => ({
             ...provided,
-            paddingTop: "0px",
-            ...cell.styles?.indicatorsContainer,
+            height: "32px",
           }),
           dropdownIndicator: (provided) => ({
             ...provided,
-            padding: "0px 4px",
-            ...cell.styles?.dropdownIndicator,
+            padding: "4px 8px",
+            color: "#bfbfbf",
+            height: "32px",
           }),
           singleValue: (provided) => ({
             ...provided,
-            color: "inherit",
-            ...cell.styles?.singleValue,
-          }),
-          indicatorSeparator: (provided) => ({
-            ...provided,
-            marginTop: "4px",
-            marginBottom: "4px",
-            ...cell.styles?.indicatorSeparator,
+            color: "rgba(0, 0, 0, 0.88)",
+            margin: "0",
+            padding: "0 8px",
           }),
           input: (provided) => ({
             ...provided,
-            padding: 0,
-            ...cell.styles?.input,
+            margin: "0",
+            padding: "0 8px",
           }),
           valueContainer: (provided) => ({
             ...provided,
-            padding: "0 8px",
-            ...cell.styles?.valueContainer,
+            padding: "0",
+            height: "32px",
+          }),
+          menu: (provided) => ({
+            ...provided,
+            marginTop: "4px",
+            backgroundColor: "white",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+            borderRadius: "2px",
+          }),
+          option: (provided, state) => ({
+            ...provided,
+            padding: "5px 12px",
+            backgroundColor: state.isSelected
+              ? "#e6f4ff"
+              : state.isFocused
+              ? "#f5f5f5"
+              : "white",
+            color: state.isSelected ? "#1677ff" : "rgba(0, 0, 0, 0.88)",
+            cursor: "pointer",
+            fontSize: "14px",
+            lineHeight: "22px",
+            "&:hover": {
+              backgroundColor: "#f5f5f5",
+            },
           }),
         }}
       />
