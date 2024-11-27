@@ -369,7 +369,7 @@ function App() {
       .flatMap((_, idx) => [
         { columnId: `project-name-${idx + 1}`, width: 120 },
         { columnId: `project-function-${idx + 1}`, width: 120 },
-        { columnId: `project-percentage-${idx + 1}`, width: 80 },
+        { columnId: `project-percentage-${idx + 1}`, width: 100 },
       ]) satisfies Column[];
 
     const endColumns = [
