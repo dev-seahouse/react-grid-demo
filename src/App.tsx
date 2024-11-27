@@ -443,9 +443,24 @@ function App() {
         };
 
         const endCells: DefaultCellTypes[] = [
-          { type: "text", text: manHour.assignee },
-          { type: "text", text: manHour.status },
-          { type: "text", text: manHour.updatedAt },
+          {
+            type: "text",
+            text: manHour.assignee,
+            nonEditable: true,
+            style: NON_EDITABLE_STYLE,
+          },
+          {
+            type: "text",
+            text: manHour.status,
+            nonEditable: true,
+            style: NON_EDITABLE_STYLE,
+          },
+          {
+            type: "text",
+            text: manHour.updatedAt,
+            nonEditable: true,
+            style: NON_EDITABLE_STYLE,
+          },
           totalPercentageCell,
         ];
 
