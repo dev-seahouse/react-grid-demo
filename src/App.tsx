@@ -8,12 +8,15 @@ import {
   TextCell,
   NumberCell,
   CellChange,
-  DropdownCell,
   type CellStyle,
 } from "@silevis/reactgrid";
 import { useEffect, useState } from "react";
 import "@silevis/reactgrid/styles.css";
 import "./App.css";
+import {
+  DropdownCellTemplate,
+  type DropdownCell,
+} from "./components/DropdownCellTemplate";
 
 interface ProjectOption {
   id: string;
@@ -267,6 +270,8 @@ function createProjectCells({
   return [
     {
       type: "dropdown",
+      text: selectedOption?.name || "",
+      value: 0,
       selectedValue: project.projectId ?? "",
       values: options.map((option: ProjectOption) => ({
         value: option.id,
@@ -284,6 +289,8 @@ function createProjectCells({
     },
     {
       type: "dropdown",
+      text: PERCENTAGE_FORMAT.format(project.percentage / 100),
+      value: project.percentage,
       selectedValue: project.percentage.toString(),
       values: PERCENTAGE_OPTIONS,
       isOpen: percentageIsOpen,
@@ -296,6 +303,8 @@ function createEmptyCells(): [DropdownCell, TextCell, DropdownCell] {
   return [
     {
       type: "dropdown",
+      text: "",
+      value: 0,
       values: [],
       selectedValue: "",
       isOpen: false,
@@ -312,6 +321,8 @@ function createEmptyCells(): [DropdownCell, TextCell, DropdownCell] {
     },
     {
       type: "dropdown",
+      text: "",
+      value: 0,
       values: [],
       selectedValue: "",
       isOpen: false,
@@ -568,6 +579,9 @@ function App() {
         enableRowSelection
         enableRangeSelection
         enableColumnSelection
+        customCellTemplates={{
+          dropdown: new DropdownCellTemplate(),
+        }}
       />
     </div>
   );
