@@ -205,7 +205,7 @@ const PERCENTAGE_FORMAT = new Intl.NumberFormat("zh-CN", {
 
 interface DropdownState {
   [rowId: string]: {
-    [projectIndex: string]: boolean;
+    [key: string]: boolean;
   };
 }
 
@@ -232,16 +232,33 @@ const NON_EDITABLE_STYLE = {
 interface CreateProjectCellsParams {
   project: Project;
   manHourId: string;
-  isOpen: boolean;
+  projectIsOpen: boolean;
+  percentageIsOpen: boolean;
   projectOptionsMap: ProjectOptionsMap;
 }
+
+const PERCENTAGE_OPTIONS: OptionType[] = [
+  { value: "0", label: "0%" },
+  { value: "5", label: "5%" },
+  { value: "10", label: "10%" },
+  { value: "20", label: "20%" },
+  { value: "30", label: "30%" },
+  { value: "40", label: "40%" },
+  { value: "50", label: "50%" },
+  { value: "60", label: "60%" },
+  { value: "70", label: "70%" },
+  { value: "80", label: "80%" },
+  { value: "90", label: "90%" },
+  { value: "100", label: "100%" },
+];
 
 function createProjectCells({
   project,
   manHourId,
-  isOpen,
+  projectIsOpen,
+  percentageIsOpen,
   projectOptionsMap,
-}: CreateProjectCellsParams): [DropdownCell, TextCell, NumberCell] {
+}: CreateProjectCellsParams): [DropdownCell, TextCell, DropdownCell] {
   const options = projectOptionsMap[manHourId] || [];
   const selectedOption = options.find(
     (option: ProjectOption) => option.id === project.projectId
@@ -255,7 +272,7 @@ function createProjectCells({
         value: option.id,
         label: option.name,
       })),
-      isOpen,
+      isOpen: projectIsOpen,
       groupId: "project-name",
     },
     {
@@ -266,16 +283,16 @@ function createProjectCells({
       groupId: "project-function",
     },
     {
-      type: "number",
-      value: project.percentage / 100,
-      format: PERCENTAGE_FORMAT,
-      nanToZero: true,
+      type: "dropdown",
+      selectedValue: project.percentage.toString(),
+      values: PERCENTAGE_OPTIONS,
+      isOpen: percentageIsOpen,
       groupId: "project-percentage",
     },
   ];
 }
 
-function createEmptyCells(): [DropdownCell, TextCell, NumberCell] {
+function createEmptyCells(): [DropdownCell, TextCell, DropdownCell] {
   return [
     {
       type: "dropdown",
@@ -294,10 +311,11 @@ function createEmptyCells(): [DropdownCell, TextCell, NumberCell] {
       groupId: "project-function",
     },
     {
-      type: "number",
-      value: 0,
-      format: PERCENTAGE_FORMAT,
-      nonEditable: true,
+      type: "dropdown",
+      values: [],
+      selectedValue: "",
+      isOpen: false,
+      isDisabled: true,
       style: DISABLED_STYLE,
       groupId: "project-percentage",
     },
@@ -331,8 +349,12 @@ function App() {
     fetchData();
   }, []);
 
-  function getDropdownState(rowId: string, projectIndex: number): boolean {
-    return dropdownStates[rowId]?.[projectIndex] ?? false;
+  function getDropdownState(
+    rowId: string,
+    projectIndex: number,
+    field: "project" | "percentage"
+  ): boolean {
+    return dropdownStates[rowId]?.[`${field}-${projectIndex}`] ?? false;
   }
 
   const getColumns = (maxNumProjects: number): Column[] => {
@@ -392,7 +414,12 @@ function App() {
               return createProjectCells({
                 project: manHour.projects[index],
                 manHourId: manHour.id,
-                isOpen: getDropdownState(manHour.id, index),
+                projectIsOpen: getDropdownState(manHour.id, index, "project"),
+                percentageIsOpen: getDropdownState(
+                  manHour.id,
+                  index,
+                  "percentage"
+                ),
                 projectOptionsMap: projectOptions,
               });
             }
@@ -439,96 +466,55 @@ function App() {
 
     for (const change of changes) {
       if (typeof change.rowId !== "number") {
-        throw new Error("Invalid rowId, expected roleId to be idx of manHours");
-      }
-      if (typeof change.columnId !== "string") {
-        throw new Error("Invalid columnId, expected columnId to be string");
-      }
-
-      if (!change.columnId.startsWith("project")) {
-        return prevManHours;
+        continue;
       }
 
       const data = newManHours[change.rowId];
-      const columnId = change.columnId;
+      const columnId = change.columnId as string;
+
+      if (!columnId.startsWith("project")) {
+        continue;
+      }
 
       const projectColIdParts = columnId.split("-");
       const [_, field, indexStr] = projectColIdParts;
       const projectIndex = parseInt(indexStr) - 1;
 
       if (projectIndex < 0) {
-        console.warn("Invalid project index: ", projectIndex);
-        return prevManHours;
+        continue;
       }
 
-      switch (change.type) {
-        case "text": {
-          if (projectColIdParts.length !== 3) {
-            throw new Error(
-              `Invalid project columnId, expected format: project-function-1, got ${columnId}`
-            );
+      if (change.type === "dropdown") {
+        const dropdownCell = change.newCell;
+        const previousCell = change.previousCell;
+
+        const isPercentageField = field === "percentage";
+        const dropdownKey = isPercentageField
+          ? `percentage-${projectIndex}`
+          : `project-${projectIndex}`;
+
+        setDropdownStates((prev) => {
+          const newState = { ...prev };
+          if (!newState[data.id]) {
+            newState[data.id] = {};
           }
+          newState[data.id][dropdownKey] = Boolean(dropdownCell.isOpen);
+          return newState;
+        });
 
-          const options = projectOptions[data.id] || [];
-          const selectedProject = options.find(
-            (option: ProjectOption) =>
-              option.id === data.projects[projectIndex].projectId
-          );
-
-          if (selectedProject && isStringKey(field, selectedProject)) {
-            selectedProject[field] = change.newCell.text;
-          }
-          break;
-        }
-
-        case "dropdown": {
-          setDropdownStates((prev) => {
-            const newState = { ...prev };
-            if (!newState[data.id]) {
-              newState[data.id] = {};
-            }
-            newState[data.id][projectIndex] = Boolean(change.newCell.isOpen);
-            return newState;
-          });
-
-          if (
-            change.newCell.selectedValue &&
-            change.newCell.selectedValue !== change.previousCell.selectedValue
-          ) {
-            data.projects[projectIndex].projectId =
-              change.newCell.selectedValue;
-          }
-          break;
-        }
-
-        case "number": {
-          console.log("change", change);
-          const newValue = change.newCell.value;
-          if (typeof newValue === "number" && !isNaN(newValue)) {
-            const percentageValue = Math.round(newValue * 100);
-
-            if (percentageValue >= 0 && percentageValue <= 100) {
+        if (
+          !dropdownCell.isOpen &&
+          dropdownCell.selectedValue &&
+          dropdownCell.selectedValue !== previousCell.selectedValue
+        ) {
+          if (isPercentageField) {
+            const percentageValue = parseInt(dropdownCell.selectedValue);
+            if (!isNaN(percentageValue)) {
               data.projects[projectIndex].percentage = percentageValue;
-
-              const totalPercentage = data.projects.reduce(
-                (sum, project) => sum + project.percentage,
-                0
-              );
-
-              if (totalPercentage > 100) {
-                console.warn(
-                  `Total percentage exceeds 100% for employee ${data.employee}`
-                );
-              }
-            } else {
-              console.warn(
-                `Invalid percentage value: ${percentageValue}%. Must be between 0 and 100`
-              );
-              // Revert to previous value
-              return prevManHours;
             }
+          } else {
+            data.projects[projectIndex].projectId = dropdownCell.selectedValue;
           }
-          break;
         }
       }
     }
