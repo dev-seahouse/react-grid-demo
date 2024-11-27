@@ -521,16 +521,16 @@ function App() {
 
     return newManHours;
   }
-  type StringKeys<T extends object> = {
-    [K in keyof T]: T[K] extends string ? K : never;
-  }[keyof T];
+  // type StringKeys<T extends object> = {
+  //   [K in keyof T]: T[K] extends string ? K : never;
+  // }[keyof T];
 
-  function isStringKey<T extends object>(
-    key: PropertyKey,
-    obj: T
-  ): key is StringKeys<T> {
-    return key in obj && typeof (obj as any)[key] === "string";
-  }
+  // function isStringKey<T extends object>(
+  //   key: PropertyKey,
+  //   obj: T
+  // ): key is StringKeys<T> {
+  //   return key in obj && typeof (obj as any)[key] === "string";
+  // }
 
   function handleChanges(changes: CellChange[]) {
     setManHours((prev) => applyChangesToManHours(changes, prev));
